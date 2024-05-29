@@ -39,6 +39,10 @@ function splitM3U(m3uContent, baseUrl) {
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
+app.get('/', (req, res) => {
+  res.send('Selamat datang di aplikasi splitter M3U!');
+});
+
 app.post('/split_m3u', async (req, res) => {
   const { m3u_url: m3uUrl } = req.body;
 
