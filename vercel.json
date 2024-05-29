@@ -1,19 +1,9 @@
 {
-    "version": 2,
-    "builds": [
-        {
-            "src": "index.js",
-            "use": "@vercel/node"
-        }
-    ],
-    "routes": [
-        {
-            "src": "/(.*)",
-            "dest": "index.js",
-            "headers": {
-                "Access-Control-Allow-Origin": "*"
-            }
-        }
-    ],
-    "installCommand": "npm install"
+  "version": 2,
+  "builds": [
+    { "src": "index.js", "use": "@vercel/node" }
+  ],
+  "routes": [
+    { "src": "/split_m3u", "dest": "index.js" }
+  ]
 }
