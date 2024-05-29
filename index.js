@@ -1,31 +1,30 @@
-const express = require("express");
-const axios = require("axios");
-const { parse } = require("url");
+const express = require('express');
+const axios = require('axios');
+const { URL } = require('url');
 
 const app = express();
-const port = process.env.PORT || 3000;
 
 function splitM3U(m3uContent, baseUrl) {
   const resolutions = {
-    "640x360": null,
-    "854x480": null,
-    "1280x720": null,
-    "1920x1080": null,
+    '640x360': null,
+    '854x480': null,
+    '1280x720': null,
+    '1920x1080': null,
     auto: null,
   };
 
-  const lines = m3uContent.split("\n");
+  const lines = m3uContent.split('\n');
   let currentResolution = null;
 
   for (const line of lines) {
-    if (line.startsWith("#EXT-X-STREAM-INF:")) {
-      if (line.includes("RESOLUTION=")) {
-        currentResolution = line.split("RESOLUTION=")[1].split(",")[0];
+    if (line.startsWith('#EXT-X-STREAM-INF:')) {
+      if (line.includes('RESOLUTION=')) {
+        currentResolution = line.split('RESOLUTION=')[1].split(',')[0];
       } else {
-        currentResolution = "auto";
+        currentResolution = 'auto';
       }
 
-      if (currentResolution === "auto") {
+      if (currentResolution === 'auto') {
         resolutions[currentResolution] = baseUrl;
       }
     } else if (currentResolution) {
@@ -37,33 +36,32 @@ function splitM3U(m3uContent, baseUrl) {
   return resolutions;
 }
 
+app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
-app.post("/split_m3u", async (req, res) => {
+app.post('/split_m3u', async (req, res) => {
   const { m3u_url: m3uUrl } = req.body;
 
   if (!m3uUrl) {
-    return res.status(400).json({ error: "No m3u_url provided" });
+    return res.status(400).json({ error: 'No m3u_url provided' });
   }
 
   try {
     const response = await axios.get(m3uUrl);
 
     if (response.status !== 200) {
-      return res.status(400).json({ error: "Failed to download M3U file" });
+      return res.status(400).json({ error: 'Failed to download M3U file' });
     }
 
     const m3uContent = response.data;
-    const baseUrl = parse(m3uUrl).href;
-    const resolutions = splitM3U(m3uContent, baseUrl);
+    const baseUrl = new URL(m3uUrl);
+    const resolutions = splitM3U(m3uContent, baseUrl.href);
 
-    resolutions["auto"] = m3uUrl;
+    resolutions['auto'] = m3uUrl;
     return res.json(resolutions);
   } catch (error) {
-    return res.status(500).json({ error: "Internal server error" });
+    return res.status(500).json({ error: 'Internal server error' });
   }
 });
 
-app.listen(port, () => {
-  console.log(`Server running on port ${port}`);
-});
+module.exports = app;
